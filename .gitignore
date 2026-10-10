@@ -1,0 +1,8 @@
+_backup/*
+!_backup/.gitkeep
+__pycache__/
+*.pyc
+*.log
+dist/
+build/
+*.exe
