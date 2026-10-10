@@ -127,9 +127,13 @@
 
 - 命令一律通过 `axlCmdRegister` 注册，项目内统一封装为 `XFSKILL_RegisterCommand`，命令名必须以 `xfskill_` 开头（smoke 检查 10、11）。
 - 菜单一律"先查后插"：先 `axlUIMenuFind` 判断是否已存在，再 `axlUIMenuInsert` 插入，菜单名固定为 `XFSKILL`，保证重复加载不产生重复菜单。
+  菜单插入必须在 `axlTriggerSet('menu)` 注册的触发器回调内执行（官方 `ui/menu.il` 示例规定触发器外插入仅限开发期调试），
+  锚点用 `axlUIMenuFind(nil -1)` 定位菜单栏最右侧菜单，顶层弹出菜单才能出现在菜单栏上。
 - 所有 `axl*` 调用必须包在 `errset` 中，失败降级为 `XFSKILL_Alert`，禁止让加载链整体崩溃。
-- 外部输入（文件、配置、用户输入）必须校验后再使用；`strlen`/`substr` 前确认字符串非 `nil`。
+- 外部输入（文件、配置、用户输入）必须校验后再使用；`strlen`/`substring` 前确认字符串非 `nil`。
 - 字符串比较用 `equal` / `==` / `!=`，禁止用 `equalp` 之类的宽松比较。
+- 只用 SKILL 标准原语：取子串用 `substring(str start [length])`，禁止 `substr`（它不是内置函数，
+  调用即 `*Error* eval: undefined function`，smoke 检查 14）。
 
 ## 9. 事务保护规范
 

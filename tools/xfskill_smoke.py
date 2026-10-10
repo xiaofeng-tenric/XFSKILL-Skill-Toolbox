@@ -40,6 +40,7 @@ HEADER_FIELDS = ("文件名", "作者", "创建日期", "版本", "功能描述"
 MAX_LINE = 120
 DEFUN_RE = re.compile(r"^[ \t]*(?:defun|procedure)[ \t]*\([ \t]*([A-Za-z_][A-Za-z0-9_]*)", re.M)
 DEFUN_JOINED_RE = re.compile(r"(?<![\w])(?:defun|procedure)[ \t]*\([ \t]*[A-Za-z_][A-Za-z0-9_]*\(")
+BANNED_PRIMITIVES = {"substr": "substring"}
 COMMAND_PATTERNS = (
     re.compile(r'axlCmdRegister[ \t]*\([ \t]*"([^"]+)"'),
     re.compile(r'XFSKILL_RegisterCommand[ \t]*\([ \t]*"([^"]+)"'),
@@ -178,6 +179,15 @@ def check_file(path: Path, source_encoding: str, expect_version: str):
             errors.append(
                 "{}:{} defun/procedure name must be followed by a space, not (".format(rel, line)
             )
+        for banned, replacement in sorted(BANNED_PRIMITIVES.items()):
+            pattern = re.compile(r"(?<!\w)" + banned + r"\(")
+            for match in pattern.finditer(text):
+                line = text.count("\n", 0, match.start()) + 1
+                errors.append(
+                    "{}:{} {} is not a SKILL builtin, use {} instead".format(
+                        rel, line, banned, replacement
+                    )
+                )
     return errors
 
 

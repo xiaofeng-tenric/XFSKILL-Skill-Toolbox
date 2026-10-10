@@ -2,11 +2,15 @@
 ; 作者: XFSKILL Dev Team
 ; 创建日期: 2026-10-10
 ; 版本: 0.1.0
-; 功能描述: XFSKILL 菜单层，按先查后插原则把 XFSKILL 菜单挂到 Allegro 菜单栏
-; 修改记录: 2026-10-10 创建菜单项声明、菜单定位与菜单插入
+; 功能描述: XFSKILL 菜单层，先查后插，由 menu 触发器在 Allegro 装载菜单时把 XFSKILL 挂上菜单栏
+; 修改记录: 2026-10-10 创建菜单层先查后插；菜单插入改由 axlTriggerSet 注册的 menu 触发器执行
 
 unless(boundp('XFSKILL_MENU_BUILT)
   XFSKILL_MENU_BUILT = nil
+)
+
+unless(boundp('XFSKILL_MENU_TRIGGER_SET)
+  XFSKILL_MENU_TRIGGER_SET = nil
 )
 
 defun(XFSKILL_MenuItems ()
@@ -31,15 +35,10 @@ defun(XFSKILL_FindExistingMenu ()
 
 defun(XFSKILL_MenuAnchor ()
   let((probe)
-    probe = errset(axlUIMenuFind(nil -1 'top))
+    probe = errset(axlUIMenuFind(nil -1))
     if(probe && car(probe)
       then car(probe)
-      else
-        probe = errset(axlUIMenuFind(nil -1))
-        if(probe && car(probe)
-          then car(probe)
-          else nil
-        )
+      else nil
     )
   )
 )
@@ -52,7 +51,7 @@ defun(XFSKILL_MenuFill (subMenu)
 )
 
 defun(XFSKILL_MenuBuild ()
-  let((existing anchor subMenu)
+  let((existing anchor probe)
     existing = XFSKILL_FindExistingMenu()
     if(existing
       then
@@ -66,15 +65,51 @@ defun(XFSKILL_MenuBuild ()
             XFSKILL_Alert("menu bar not ready, run xfskill_menu again later")
             nil
           else
-            subMenu = axlUIMenuInsert(anchor 'popup "XFSKILL")
-            when(subMenu
-              when(errset(XFSKILL_MenuFill(subMenu) t)
-                XFSKILL_MENU_BUILT = t
-                XFSKILL_Log("menu inserted XFSKILL")
-              )
+            probe = errset(axlUIMenuInsert(anchor 'popup "XFSKILL"))
+            if(probe && car(probe)
+              then
+                when(errset(XFSKILL_MenuFill(car(probe)) t)
+                  XFSKILL_MENU_BUILT = t
+                  XFSKILL_Log("menu inserted XFSKILL")
+                )
+                car(probe)
+              else
+                XFSKILL_Alert("menu insert failed, run xfskill_menu again later")
+                nil
             )
-            subMenu
         )
     )
+  )
+)
+
+defun(XFSKILL_MenuTrigger (t_menuName)
+  errset(XFSKILL_MenuBuild() t)
+  nil
+)
+
+defun(XFSKILL_MenuInit ()
+  if(!isCallable('axlTriggerSet)
+    then
+      XFSKILL_Alert("axlTriggerSet unavailable, run xfskill_menu manually")
+      nil
+    else
+      if(XFSKILL_MENU_TRIGGER_SET
+        then
+          XFSKILL_Log("menu trigger already registered")
+          t
+        else
+          let((probe)
+            probe = errset(axlTriggerSet('menu 'XFSKILL_MenuTrigger))
+            if(probe && car(probe)
+              then
+                XFSKILL_MENU_TRIGGER_SET = t
+                XFSKILL_Log("menu trigger registered")
+                t
+              else
+                XFSKILL_Alert("menu trigger register failed, run xfskill_menu manually")
+                nil
+            )
+          )
+      )
   )
 )

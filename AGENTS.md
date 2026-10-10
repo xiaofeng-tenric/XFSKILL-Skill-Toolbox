@@ -25,6 +25,9 @@ triggers:
 阶段产物与检查点必须逐项留痕；本文件与 `references/coding-standard.md` 冲突时，
 以 `references/coding-standard.md` 的格式条款为准，其余以本文件为准。
 
+- 不要修改AGENTS.md的工作流规范
+
+
 ---
 
 ## 1. 项目目标
@@ -251,7 +254,7 @@ python tools\xfskill_smoke.py
 - 目标：在进入 Allegro 之前拦截结构性错误。
 - 输入：GBK 编码的 `.il` / `.cfg` 源文件。
 - 输出：`RESULT PASS files=N ...` 或 `[FAIL]` 明细列表。
-- 检查点（13 项检查全部通过）：
+- 检查点（14 项检查全部通过）：
 
 | # | 检查 | 说明 |
 | --- | --- | --- |
@@ -268,6 +271,7 @@ python tools\xfskill_smoke.py
 | 11 | 无重复 | 同一命令、同一函数名不得重复 |
 | 12 | CHANGELOG | 存在 `## [<VERSION>]` 小节 |
 | 13 | 函数定义写法 | `defun(Name (args)` 的名字与参数表之间必须有空格 |
+| 14 | 禁用非标准原语 | `substr` 必须写成 SKILL 标准的 `substring` |
 
 - 命令与退出码：
 
@@ -424,56 +428,80 @@ load(strcat(XFSKILL_ROOT "/main.il"))
 ### 8.2 main.il 加载链
 
 ```skill
-unless(boundp('XFSKILL_ROOT)
-  error("XFSKILL_ROOT is not set, load main.il through allegro.ilinit")
+when(!boundp('XFSKILL_ROOT)
+  XFSKILL_ROOT = getShellEnvVar("XFSKILL")
 )
 
-load(strcat(XFSKILL_ROOT "/core/utils.il"))
-load(strcat(XFSKILL_ROOT "/core/config.il"))
-load(strcat(XFSKILL_ROOT "/core/loader.il"))
-load(strcat(XFSKILL_ROOT "/core/menu.il"))
-load(strcat(XFSKILL_ROOT "/core/test_framework.il"))
+when(XFSKILL_ROOT && isDir(strcat(XFSKILL_ROOT "/core"))
+  load(strcat(XFSKILL_ROOT "/core/utils.il"))
+  load(strcat(XFSKILL_ROOT "/core/config.il"))
+  load(strcat(XFSKILL_ROOT "/core/loader.il"))
+  load(strcat(XFSKILL_ROOT "/core/menu.il"))
+  load(strcat(XFSKILL_ROOT "/core/test_framework.il"))
 
-XFSKILL_TESTS = list()
-XFSKILL_VersionLoad()
-XFSKILL_ConfigLoad(XFSKILL_JoinPath(XFSKILL_ROOT "config/xfskill.cfg"))
-XFSKILL_LoadModules()
+  XFSKILL_TESTS = list()
+  XFSKILL_VersionLoad()
+  XFSKILL_ConfigLoad(XFSKILL_JoinPath(XFSKILL_ROOT "config/xfskill.cfg"))
+  XFSKILL_LoadModules()
 
-XFSKILL_RegisterCommand("xfskill_tests" 'XFSKILL_RunUnitTests)
-XFSKILL_RegisterCommand("xfskill_smoke" 'XFSKILL_SmokeTest)
+  XFSKILL_RegisterCommand("xfskill_tests" 'XFSKILL_RunUnitTests)
+  XFSKILL_RegisterCommand("xfskill_smoke" 'XFSKILL_SmokeTest)
+
+  when(equal(XFSKILL_ConfigGet("menu_enabled" "t") "t")
+    XFSKILL_MenuInit()
+  )
+)
+
+when(!(XFSKILL_ROOT && isDir(strcat(XFSKILL_ROOT "/core"))
+  error("XFSKILL_ROOT is not set or invalid; set env var XFSKILL or load main.il through allegro.ilinit")
+)
 ```
 
-### 8.3 菜单：先查后插
+根目录未绑定时自动从环境变量 `XFSKILL` 取值；校验失败只报一次错，整条链不启动，
+避免 `loadi` 逐行继续执行造成的级联错误。
+
+### 8.3 菜单：触发器内先查后插
+
+官方示例 `share/pcb/examples/skill/ui/menu.il` 规定：菜单项必须在 menu 触发器内创建
+（触发器外插入仅限开发期调试）。`xfskill_menu` 命令保留为开发期手动插入通道。
 
 ```skill
-defun(XFSKILL_MenuBuild ()
-  let((existing anchor subMenu)
-    existing = XFSKILL_FindExistingMenu()
-    if(existing
-      then
-        XFSKILL_MENU_BUILT = t
-        XFSKILL_Log("menu already present, skip insert")
-        existing
-      else
-        anchor = XFSKILL_MenuAnchor()
-        if(!anchor
-          then
-            XFSKILL_Alert("menu bar not ready, run xfskill_menu again later")
-            nil
-          else
-            subMenu = axlUIMenuInsert(anchor 'popup "XFSKILL")
-            when(subMenu
-              when(errset(XFSKILL_MenuFill(subMenu) t)
-                XFSKILL_MENU_BUILT = t
-                XFSKILL_Log("menu inserted XFSKILL")
-              )
+defun(XFSKILL_MenuTrigger (t_menuName)
+  errset(XFSKILL_MenuBuild() t)
+  nil
+)
+
+defun(XFSKILL_MenuInit ()
+  if(!isCallable('axlTriggerSet)
+    then
+      XFSKILL_Alert("axlTriggerSet unavailable, run xfskill_menu manually")
+      nil
+    else
+      if(XFSKILL_MENU_TRIGGER_SET
+        then
+          XFSKILL_Log("menu trigger already registered")
+          t
+        else
+          let((probe)
+            probe = errset(axlTriggerSet('menu 'XFSKILL_MenuTrigger))
+            if(probe && car(probe)
+              then
+                XFSKILL_MENU_TRIGGER_SET = t
+                XFSKILL_Log("menu trigger registered")
+                t
+              else
+                XFSKILL_Alert("menu trigger register failed, run xfskill_menu manually")
+                nil
             )
-            subMenu
-        )
-    )
+          )
+      )
   )
 )
 ```
+
+`XFSKILL_MenuBuild` 保持先查后插：锚点 `axlUIMenuFind(nil -1)` 取菜单栏最右侧菜单（Help），
+在其位置插入顶层 `XFSKILL` 弹出菜单；查到 `xfskill_hello` 即视为已存在，跳过重复插入。
+触发器在 Allegro 每次装载菜单时回调，因此切换设计重建菜单后 XFSKILL 菜单会自动补回。
 
 ### 8.4 断言与测试登记
 
@@ -600,7 +628,7 @@ VERSION 文件  ==  每个 .il 文件头"版本"  ==  CHANGELOG.md 小节  ==  g
 - [x] `main.il` 与 `core/{utils,config,loader,menu,test_framework}.il`
 - [x] `modules/hello.il`（`XFSKILL_HelloWorld` / `xfskill_hello` / `XFSKILL_Test_HelloWorld`）
 - [x] `config/xfskill.cfg`
-- [x] `tools/xfskill_smoke.py`（层 1，13 项检查）
+- [x] `tools/xfskill_smoke.py`（层 1，14 项检查）
 - [x] `tools/convert_encoding.ps1`（UTF-8 ↔ GBK）
 - [x] `tools/install.ps1`（安装 / 升级 / 回滚 / `-Silent`）
 - [x] `references/coding-standard.md`
@@ -628,8 +656,9 @@ VERSION 文件  ==  每个 .il 文件头"版本"  ==  CHANGELOG.md 小节  ==  g
 | 启动无 `[XFSKILL]` 日志 | `allegro.ilinit` 是否有标记块；`XFSKILL_ROOT` 是否正斜杠 | 重跑 `install.ps1` 或手写标记块 |
 | 提示 `XFSKILL_ROOT is not set` | ilinit 未执行或被覆盖 | 检查标记块是否被编辑器删除 |
 | `*Error* defun: too few arguments (at least 3 expected, 2 given)` | 函数定义写成了 `defun(Name(args)` | 函数名与参数表之间补空格：`defun(Name (args)`，层 1 检查 13 可静态拦截 |
+| `*Error* eval: undefined function - substr` | `substr` 不是 SKILL 标准函数 | 全局换成 `substring`，层 1 检查 14 可静态拦截 |
 | 启动日志有 `*Error* load: error while loading file` | 该文件加载时中止，看它报的行号 | 多为上一行的 defun 写法错误，修正后 `xfskill_reload` |
-| 菜单不出现 | 层 3 检查 7；`menu_enabled` 是否为 `t` | 命令行执行 `xfskill_menu` 后重跑冒烟 |
+| 菜单不出现 | 层 3 检查 7；`menu_enabled` 是否为 `t`；启动日志有无 `menu trigger registered` | 重启后由 menu 触发器自动插入；或命令行执行 `xfskill_menu` 后重跑冒烟 |
 | 中文乱码 | `.il` / `.cfg` 是否被存成 UTF-8 | `convert_encoding.ps1 -To gbk` 后重跑层 1 |
 | 层 1 报 GBK round trip | 文件混入 UTF-8 或 CR | 转码脚本处理后复查 |
 | 层 1 报括号不平衡 | 换行断在参数中间或漏写右括号 | 按第 4 节格式规则修正 |
