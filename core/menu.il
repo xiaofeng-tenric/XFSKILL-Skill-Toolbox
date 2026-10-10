@@ -3,7 +3,7 @@
 ; 创建日期: 2026-10-10
 ; 版本: 0.1.0
 ; 功能描述: XFSKILL 菜单层，先查后插，由 menu 触发器在 Allegro 装载菜单时把 XFSKILL 挂上菜单栏
-; 修改记录: 2026-10-10 创建菜单层先查后插；菜单插入改由 axlTriggerSet 注册的 menu 触发器执行
+; 修改记录: 2026-10-10 创建菜单层；菜单插入改由 menu 触发器执行；菜单树改为 XFSKILL-TEST1-TEST2 三级嵌套
 
 unless(boundp('XFSKILL_MENU_BUILT)
   XFSKILL_MENU_BUILT = nil
@@ -13,10 +13,14 @@ unless(boundp('XFSKILL_MENU_TRIGGER_SET)
   XFSKILL_MENU_TRIGGER_SET = nil
 )
 
-defun(XFSKILL_MenuItems ()
+defun(XFSKILL_MenuTree ()
   list(
-    list("Hello World" "xfskill_hello")
-    list("Run Unit Tests" "xfskill_tests")
+    list('popup "XFSKILL")
+    list('popup "TEST1")
+    list("TEST2-1" "xfskill_hello")
+    list("TEST2-2" "xfskill_tests")
+    'end
+    list('separator)
     list("Run Smoke Test" "xfskill_smoke")
     list("Show Version" "xfskill_version")
     list("Reload XFSKILL" "xfskill_reload")
@@ -43,13 +47,6 @@ defun(XFSKILL_MenuAnchor ()
   )
 )
 
-defun(XFSKILL_MenuFill (subMenu)
-  foreach(menuEntry XFSKILL_MenuItems()
-    axlUIMenuInsert(subMenu car(menuEntry) cadr(menuEntry))
-  )
-  t
-)
-
 defun(XFSKILL_MenuBuild ()
   let((existing anchor probe)
     existing = XFSKILL_FindExistingMenu()
@@ -65,14 +62,12 @@ defun(XFSKILL_MenuBuild ()
             XFSKILL_Alert("menu bar not ready, run xfskill_menu again later")
             nil
           else
-            probe = errset(axlUIMenuInsert(anchor 'popup "XFSKILL"))
+            probe = errset(axlUIMenuInsert(anchor XFSKILL_MenuTree()))
             if(probe && car(probe)
               then
-                when(errset(XFSKILL_MenuFill(car(probe)) t)
-                  XFSKILL_MENU_BUILT = t
-                  XFSKILL_Log("menu inserted XFSKILL")
-                )
-                car(probe)
+                XFSKILL_MENU_BUILT = t
+                XFSKILL_Log("menu inserted XFSKILL")
+                t
               else
                 XFSKILL_Alert("menu insert failed, run xfskill_menu again later")
                 nil
