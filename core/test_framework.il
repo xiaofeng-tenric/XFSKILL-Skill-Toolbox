@@ -21,19 +21,19 @@ unless(boundp('XFSKILL_TEST_FAILURES)
   XFSKILL_TEST_FAILURES = list()
 )
 
-defun(XFSKILL_RegisterTest(testName)
+defun(XFSKILL_RegisterTest (testName)
   XFSKILL_TESTS = cons(testName XFSKILL_TESTS)
   testName
 )
 
-defun(XFSKILL_RecordFailure(message)
+defun(XFSKILL_RecordFailure (message)
   XFSKILL_TEST_FAIL = XFSKILL_TEST_FAIL + 1
   XFSKILL_TEST_FAILURES = cons(message XFSKILL_TEST_FAILURES)
   XFSKILL_Log(strcat("FAIL " message))
   nil
 )
 
-defun(XFSKILL_Assert(condition message)
+defun(XFSKILL_Assert (condition message)
   if(condition
     then
       XFSKILL_TEST_PASS = XFSKILL_TEST_PASS + 1
@@ -42,21 +42,21 @@ defun(XFSKILL_Assert(condition message)
   )
 )
 
-defun(XFSKILL_AssertEqual(actual expected message)
+defun(XFSKILL_AssertEqual (actual expected message)
   let((detail)
     detail = strcat(message " | expected=" XFSKILL_ToString(expected) " actual=" XFSKILL_ToString(actual))
     XFSKILL_Assert(equal(actual expected) detail)
   )
 )
 
-defun(XFSKILL_ResetCounters()
+defun(XFSKILL_ResetCounters ()
   XFSKILL_TEST_PASS = 0
   XFSKILL_TEST_FAIL = 0
   XFSKILL_TEST_FAILURES = list()
   t
 )
 
-defun(XFSKILL_ReportResult(layerName)
+defun(XFSKILL_ReportResult (layerName)
   XFSKILL_Log(sprintf(nil "%s result pass=%d fail=%d" layerName XFSKILL_TEST_PASS XFSKILL_TEST_FAIL))
   foreach(failure reverse(XFSKILL_TEST_FAILURES)
     XFSKILL_Alert(failure)
@@ -64,7 +64,7 @@ defun(XFSKILL_ReportResult(layerName)
   XFSKILL_TEST_FAIL == 0
 )
 
-defun(XFSKILL_RunUnitTests()
+defun(XFSKILL_RunUnitTests ()
   let((testFn testName)
     XFSKILL_ResetCounters()
     if(XFSKILL_TESTS == nil
@@ -82,7 +82,7 @@ defun(XFSKILL_RunUnitTests()
   )
 )
 
-defun(XFSKILL_SmokeTest()
+defun(XFSKILL_SmokeTest ()
   let((smokeOk)
     XFSKILL_ResetCounters()
     XFSKILL_Assert(strlen(XFSKILL_VERSION) > 0 "VERSION must be non-empty")

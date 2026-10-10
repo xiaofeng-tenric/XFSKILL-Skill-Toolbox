@@ -15,12 +15,12 @@ load(strcat(XFSKILL_ROOT "/core/loader.il"))
 load(strcat(XFSKILL_ROOT "/core/menu.il"))
 load(strcat(XFSKILL_ROOT "/core/test_framework.il"))
 
-defun(XFSKILL_ShowVersion()
+defun(XFSKILL_ShowVersion ()
   XFSKILL_Log(strcat("version " XFSKILL_VERSION " root " XFSKILL_ROOT))
   XFSKILL_VERSION
 )
 
-defun(XFSKILL_Reload()
+defun(XFSKILL_Reload ()
   XFSKILL_Log("reload requested")
   load(strcat(XFSKILL_ROOT "/main.il"))
   t
@@ -50,3 +50,4 @@ when(equal(XFSKILL_ConfigGet("auto_smoke" "f") "t")
 )
 
 XFSKILL_Log(strcat("ready version=" XFSKILL_VERSION " modules=" XFSKILL_ToString(XFSKILL_MODULE_COUNT)))
+XFSKILL_READY = t

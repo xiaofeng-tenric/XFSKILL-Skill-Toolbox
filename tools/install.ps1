@@ -64,8 +64,10 @@ function Update-IlInitBlock([string]$Path, [string]$Root) {
   $forwardRoot = $Root -replace '\\', '/'
   $block = @(
     $markerBegin
-    "setq(XFSKILL_ROOT `"$forwardRoot`")"
-    'load(strcat(XFSKILL_ROOT "/main.il"))'
+    "unless(boundp('XFSKILL_READY)"
+    "  setq(XFSKILL_ROOT `"$forwardRoot`")"
+    "  errset(load(strcat(XFSKILL_ROOT `"/main.il`")) t)"
+    ")"
     $markerEnd
   ) -join "`r`n"
   $content = Read-IlInit $Path

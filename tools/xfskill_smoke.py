@@ -22,6 +22,11 @@ Checks:
    10. naming              defun/procedure prefix XFSKILL_, command prefix xfskill_
    11. duplicates          same command or same function name registered twice
    12. changelog           VERSION must have a matching CHANGELOG section
+   13. definition style    defun(Name (args) needs a space: defun(Name(args) is read as
+                           one argument and aborts the load chain with
+                           "*Error* defun: too few arguments"
+   14. banned primitives   substr is not a SKILL builtin, use substring otherwise the
+                           load chain dies with "*Error* eval: undefined function"
 """
 from __future__ import annotations
 
@@ -34,6 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HEADER_FIELDS = ("文件名", "作者", "创建日期", "版本", "功能描述", "修改记录")
 MAX_LINE = 120
 DEFUN_RE = re.compile(r"^[ \t]*(?:defun|procedure)[ \t]*\([ \t]*([A-Za-z_][A-Za-z0-9_]*)", re.M)
+DEFUN_JOINED_RE = re.compile(r"(?<![\w])(?:defun|procedure)[ \t]*\([ \t]*[A-Za-z_][A-Za-z0-9_]*\(")
 COMMAND_PATTERNS = (
     re.compile(r'axlCmdRegister[ \t]*\([ \t]*"([^"]+)"'),
     re.compile(r'XFSKILL_RegisterCommand[ \t]*\([ \t]*"([^"]+)"'),
@@ -167,6 +173,11 @@ def check_file(path: Path, source_encoding: str, expect_version: str):
         for name in DEFUN_RE.findall(text):
             if not name.startswith("XFSKILL_"):
                 errors.append("{} function {} must use XFSKILL_ prefix".format(rel, name))
+        for match in DEFUN_JOINED_RE.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            errors.append(
+                "{}:{} defun/procedure name must be followed by a space, not (".format(rel, line)
+            )
     return errors
 
 

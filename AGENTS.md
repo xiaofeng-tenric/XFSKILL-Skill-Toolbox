@@ -122,10 +122,13 @@ triggers:
 2. 命名：函数 `XFSKILL_` 前缀、命令 `xfskill_` 前缀、测试 `XFSKILL_Test_` 前缀、全局 `XFSKILL_` 大写。
 3. 命名自解释，注释只写"为什么"：禁止行尾注释、禁止注释掉的死代码、禁止复述代码、禁止分节横幅。
 4. 格式：2 空格缩进、无 Tab、行宽 ≤ 120、左括号紧跟函数名、右括号与起始行行首对齐、函数之间空一行。
-5. `let` 绑定对齐，长表达式按参数边界换行，续行缩进 = 起始缩进 + 4。
-6. 所有 `axl*` 调用包 `errset`，失败降级为 `XFSKILL_Alert`。
-7. 修改数据库必须走事务：`axlDBTransactionStart` → 成功 `Commit` / 失败 `Oops`。
-8. 格式调整不得改变功能，格式化后必须重新执行三层闭环并全绿。
+5. 函数定义的函数名与参数表之间必须有空格（`defun(Name (args)`）：SKILL 读取器会把
+   `defun(Name(args)` 里的 `Name(args)` 合并成一个调用形式，`defun` 只剩 2 个参数，
+   报 `*Error* defun: too few arguments`，整条加载链在此中断（层 1 检查 13）。
+6. `let` 绑定对齐，长表达式按参数边界换行，续行缩进 = 起始缩进 + 4。
+7. 所有 `axl*` 调用包 `errset`，失败降级为 `XFSKILL_Alert`。
+8. 修改数据库必须走事务：`axlDBTransactionStart` → 成功 `Commit` / 失败 `Oops`。
+9. 格式调整不得改变功能，格式化后必须重新执行三层闭环并全绿。
 
 ---
 
@@ -248,7 +251,7 @@ python tools\xfskill_smoke.py
 - 目标：在进入 Allegro 之前拦截结构性错误。
 - 输入：GBK 编码的 `.il` / `.cfg` 源文件。
 - 输出：`RESULT PASS files=N ...` 或 `[FAIL]` 明细列表。
-- 检查点（12 项检查全部通过）：
+- 检查点（13 项检查全部通过）：
 
 | # | 检查 | 说明 |
 | --- | --- | --- |
@@ -264,6 +267,7 @@ python tools\xfskill_smoke.py
 | 10 | 命名前缀 | 函数 `XFSKILL_`、命令 `xfskill_` |
 | 11 | 无重复 | 同一命令、同一函数名不得重复 |
 | 12 | CHANGELOG | 存在 `## [<VERSION>]` 小节 |
+| 13 | 函数定义写法 | `defun(Name (args)` 的名字与参数表之间必须有空格 |
 
 - 命令与退出码：
 
@@ -396,10 +400,17 @@ powershell -ExecutionPolicy Bypass -File tools\install.ps1 -Rollback 0.1.0_20261
 
 ```skill
 ; >>> XFSKILL BEGIN (managed by install.ps1) >>>
-setq(XFSKILL_ROOT "D:/XFSKILL")
-load(strcat(XFSKILL_ROOT "/main.il"))
+unless(boundp('XFSKILL_READY)
+  setq(XFSKILL_ROOT "D:/XFSKILL")
+  errset(load(strcat(XFSKILL_ROOT "/main.il")) t)
+)
 ; <<< XFSKILL END <<<
 ```
+
+`XFSKILL_READY` 由 `main.il` 在加载链末尾置位；站点级 `%CDS_SITE%/pcb/skill/allegro.ilinit`
+与用户级 `%HOME%/pcbenv/allegro.ilinit` 两处都可以写这份标记块，先执行的加载，
+后执行的因 `XFSKILL_READY` 已绑定而跳过，不会重复加载。`errset(... t)` 保证加载失败时
+在命令行打印错误，而不是被静默吞掉。
 
 手写等价形式（开发期临时验证）：
 
@@ -435,7 +446,7 @@ XFSKILL_RegisterCommand("xfskill_smoke" 'XFSKILL_SmokeTest)
 ### 8.3 菜单：先查后插
 
 ```skill
-defun(XFSKILL_MenuBuild()
+defun(XFSKILL_MenuBuild ()
   let((existing anchor subMenu)
     existing = XFSKILL_FindExistingMenu()
     if(existing
@@ -467,7 +478,7 @@ defun(XFSKILL_MenuBuild()
 ### 8.4 断言与测试登记
 
 ```skill
-defun(XFSKILL_Test_HelloWorld()
+defun(XFSKILL_Test_HelloWorld ()
   let((greeting expected)
     greeting = XFSKILL_HelloWorld()
     expected = strcat("Hello XFSKILL " XFSKILL_VERSION)
@@ -589,7 +600,7 @@ VERSION 文件  ==  每个 .il 文件头"版本"  ==  CHANGELOG.md 小节  ==  g
 - [x] `main.il` 与 `core/{utils,config,loader,menu,test_framework}.il`
 - [x] `modules/hello.il`（`XFSKILL_HelloWorld` / `xfskill_hello` / `XFSKILL_Test_HelloWorld`）
 - [x] `config/xfskill.cfg`
-- [x] `tools/xfskill_smoke.py`（层 1，12 项检查）
+- [x] `tools/xfskill_smoke.py`（层 1，13 项检查）
 - [x] `tools/convert_encoding.ps1`（UTF-8 ↔ GBK）
 - [x] `tools/install.ps1`（安装 / 升级 / 回滚 / `-Silent`）
 - [x] `references/coding-standard.md`
@@ -616,6 +627,8 @@ VERSION 文件  ==  每个 .il 文件头"版本"  ==  CHANGELOG.md 小节  ==  g
 | --- | --- | --- |
 | 启动无 `[XFSKILL]` 日志 | `allegro.ilinit` 是否有标记块；`XFSKILL_ROOT` 是否正斜杠 | 重跑 `install.ps1` 或手写标记块 |
 | 提示 `XFSKILL_ROOT is not set` | ilinit 未执行或被覆盖 | 检查标记块是否被编辑器删除 |
+| `*Error* defun: too few arguments (at least 3 expected, 2 given)` | 函数定义写成了 `defun(Name(args)` | 函数名与参数表之间补空格：`defun(Name (args)`，层 1 检查 13 可静态拦截 |
+| 启动日志有 `*Error* load: error while loading file` | 该文件加载时中止，看它报的行号 | 多为上一行的 defun 写法错误，修正后 `xfskill_reload` |
 | 菜单不出现 | 层 3 检查 7；`menu_enabled` 是否为 `t` | 命令行执行 `xfskill_menu` 后重跑冒烟 |
 | 中文乱码 | `.il` / `.cfg` 是否被存成 UTF-8 | `convert_encoding.ps1 -To gbk` 后重跑层 1 |
 | 层 1 报 GBK round trip | 文件混入 UTF-8 或 CR | 转码脚本处理后复查 |

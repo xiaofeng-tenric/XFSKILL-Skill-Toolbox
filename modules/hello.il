@@ -5,7 +5,7 @@
 ; 功能描述: XFSKILL 示例模块，提供问候函数、菜单命令与配套单元测试
 ; 修改记录: 2026-10-10 创建示例模块，贯通加载、命令、菜单、测试四条链路
 
-defun(XFSKILL_HelloWorld()
+defun(XFSKILL_HelloWorld ()
   let((greeting)
     greeting = strcat("Hello XFSKILL " XFSKILL_VERSION)
     XFSKILL_Log(greeting)
@@ -15,7 +15,7 @@ defun(XFSKILL_HelloWorld()
 
 XFSKILL_RegisterCommand("xfskill_hello" 'XFSKILL_HelloWorld)
 
-defun(XFSKILL_Test_HelloWorld()
+defun(XFSKILL_Test_HelloWorld ()
   let((greeting expected)
     greeting = XFSKILL_HelloWorld()
     expected = strcat("Hello XFSKILL " XFSKILL_VERSION)

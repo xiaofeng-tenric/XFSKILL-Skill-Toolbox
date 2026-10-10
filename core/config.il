@@ -13,7 +13,7 @@ unless(boundp('XFSKILL_VERSION)
   XFSKILL_VERSION = "0.0.0"
 )
 
-defun(XFSKILL_VersionLoad()
+defun(XFSKILL_VersionLoad ()
   let((versionFile port line version)
     version = "0.0.0"
     versionFile = XFSKILL_JoinPath(XFSKILL_ROOT "VERSION")
@@ -32,7 +32,7 @@ defun(XFSKILL_VersionLoad()
   )
 )
 
-defun(XFSKILL_ConfigLoad(configFile)
+defun(XFSKILL_ConfigLoad (configFile)
   let((port line separator key value)
     XFSKILL_CONFIG = list()
     when(isFile(configFile)
@@ -43,8 +43,8 @@ defun(XFSKILL_ConfigLoad(configFile)
           when(strlen(line) > 0 && !XFSKILL_StartsWith(line "#")
             separator = XFSKILL_IndexOf(line "=" 1)
             when(separator
-              key = XFSKILL_Trim(substr(line 1 separator - 1))
-              value = XFSKILL_Trim(substr(line separator + 1))
+              key = XFSKILL_Trim(substring(line 1 separator - 1))
+              value = XFSKILL_Trim(substring(line separator + 1))
               when(strlen(key) > 0
                 XFSKILL_CONFIG = cons(list(key value) XFSKILL_CONFIG)
               )
@@ -59,7 +59,7 @@ defun(XFSKILL_ConfigLoad(configFile)
   )
 )
 
-defun(XFSKILL_ConfigGet(key defaultValue)
+defun(XFSKILL_ConfigGet (key defaultValue)
   let((result)
     result = defaultValue
     foreach(entry XFSKILL_CONFIG

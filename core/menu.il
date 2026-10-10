@@ -9,7 +9,7 @@ unless(boundp('XFSKILL_MENU_BUILT)
   XFSKILL_MENU_BUILT = nil
 )
 
-defun(XFSKILL_MenuItems()
+defun(XFSKILL_MenuItems ()
   list(
     list("Hello World" "xfskill_hello")
     list("Run Unit Tests" "xfskill_tests")
@@ -19,7 +19,7 @@ defun(XFSKILL_MenuItems()
   )
 )
 
-defun(XFSKILL_FindExistingMenu()
+defun(XFSKILL_FindExistingMenu ()
   let((probe)
     probe = errset(axlUIMenuFind(nil "xfskill_hello"))
     if(probe
@@ -29,7 +29,7 @@ defun(XFSKILL_FindExistingMenu()
   )
 )
 
-defun(XFSKILL_MenuAnchor()
+defun(XFSKILL_MenuAnchor ()
   let((probe)
     probe = errset(axlUIMenuFind(nil -1 'top))
     if(probe && car(probe)
@@ -44,14 +44,14 @@ defun(XFSKILL_MenuAnchor()
   )
 )
 
-defun(XFSKILL_MenuFill(subMenu)
+defun(XFSKILL_MenuFill (subMenu)
   foreach(menuEntry XFSKILL_MenuItems()
     axlUIMenuInsert(subMenu car(menuEntry) cadr(menuEntry))
   )
   t
 )
 
-defun(XFSKILL_MenuBuild()
+defun(XFSKILL_MenuBuild ()
   let((existing anchor subMenu)
     existing = XFSKILL_FindExistingMenu()
     if(existing

@@ -13,7 +13,7 @@ unless(boundp('XFSKILL_ALERT_COUNT)
   XFSKILL_ALERT_COUNT = 0
 )
 
-defun(XFSKILL_Log(message)
+defun(XFSKILL_Log (message)
   let((line)
     line = sprintf(nil "%s %s" XFSKILL_LOG_PREFIX message)
     printf("%s\n" line)
@@ -21,13 +21,13 @@ defun(XFSKILL_Log(message)
   )
 )
 
-defun(XFSKILL_Alert(message)
+defun(XFSKILL_Alert (message)
   XFSKILL_ALERT_COUNT = XFSKILL_ALERT_COUNT + 1
   XFSKILL_Log(strcat("ALERT " message))
   message
 )
 
-defun(XFSKILL_InCharSet(character charSet)
+defun(XFSKILL_InCharSet (character charSet)
   let((hit)
     hit = nil
     foreach(candidate charSet
@@ -39,17 +39,17 @@ defun(XFSKILL_InCharSet(character charSet)
   )
 )
 
-defun(XFSKILL_WhiteCharAt(text position)
+defun(XFSKILL_WhiteCharAt (text position)
   let((whiteChars)
     whiteChars = list(" " "\t" "\r" "\n")
     if(position >= 1 && position <= strlen(text)
-      then XFSKILL_InCharSet(substr(text position 1) whiteChars)
+      then XFSKILL_InCharSet(substring(text position 1) whiteChars)
       else nil
     )
   )
 )
 
-defun(XFSKILL_Trim(text)
+defun(XFSKILL_Trim (text)
   let((first last)
     first = 1
     last = strlen(text)
@@ -60,20 +60,20 @@ defun(XFSKILL_Trim(text)
       last = last - 1
     )
     if(last >= first
-      then substr(text first last - first + 1)
+      then substring(text first last - first + 1)
       else ""
     )
   )
 )
 
-defun(XFSKILL_IndexOf(text token start)
+defun(XFSKILL_IndexOf (text token start)
   let((textLength tokenLength position hit)
     textLength = strlen(text)
     tokenLength = strlen(token)
     position = start
     hit = nil
     while(!hit && position + tokenLength - 1 <= textLength
-      when(equal(substr(text position tokenLength) token)
+      when(equal(substring(text position tokenLength) token)
         hit = position
       )
       position = position + 1
@@ -82,39 +82,39 @@ defun(XFSKILL_IndexOf(text token start)
   )
 )
 
-defun(XFSKILL_StartsWith(text prefix)
+defun(XFSKILL_StartsWith (text prefix)
   if(strlen(text) < strlen(prefix)
     then nil
-    else equal(substr(text 1 strlen(prefix)) prefix)
+    else equal(substring(text 1 strlen(prefix)) prefix)
   )
 )
 
-defun(XFSKILL_EndsWith(text suffix)
+defun(XFSKILL_EndsWith (text suffix)
   let((textLength suffixLength)
     textLength = strlen(text)
     suffixLength = strlen(suffix)
     if(textLength < suffixLength
       then nil
-      else equal(substr(text textLength - suffixLength + 1 suffixLength) suffix)
+      else equal(substring(text textLength - suffixLength + 1 suffixLength) suffix)
     )
   )
 )
 
-defun(XFSKILL_ToString(value)
+defun(XFSKILL_ToString (value)
   if(stringp(value)
     then value
     else sprintf(nil "%L" value)
   )
 )
 
-defun(XFSKILL_JoinPath(directory name)
+defun(XFSKILL_JoinPath (directory name)
   if(XFSKILL_EndsWith(directory "/")
     then strcat(directory name)
     else strcat(directory "/" name)
   )
 )
 
-defun(XFSKILL_RegisterCommand(commandName handler)
+defun(XFSKILL_RegisterCommand (commandName handler)
   let((probe)
     probe = errset(axlCmdRegister(commandName handler))
     if(probe

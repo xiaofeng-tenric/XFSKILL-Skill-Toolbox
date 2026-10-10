@@ -85,19 +85,22 @@
 ## 7. 格式规范
 
 1. 缩进 2 空格，禁止 Tab。
-2. 左括号紧跟函数名或操作符，不单独占行：
-   `defun(XFSKILL_Log(message)`、`if(last >= first`。
-3. 右括号与包含该左括号的**起始行行首缩进**对齐，单独成行：
+2. 左括号紧跟函数名或操作符，不单独占行：`if(last >= first`、`let((first last)`。
+3. 函数定义必须在函数名与参数表之间保留一个空格：`defun(XFSKILL_Log (message)`、
+   `procedure(XFSKILL_Foo (a))`。SKILL 读取器会把 `defun(Name(args)` 中的
+   `Name(args)` 合并成一个调用形式，导致 `defun` 只收到 2 个参数并报
+   `*Error* defun: too few arguments`，加载链在此中断（smoke 检查 13）。
+4. 右括号与包含该左括号的**起始行行首缩进**对齐，单独成行：
 
    ```text
-   defun(XFSKILL_Trim(text)
+   defun(XFSKILL_Trim (text)
      let((first last)
        ...
      )
    )
    ```
 
-4. 需要换行时在参数边界断行，续行缩进 = 语句起始缩进 + 4；整条语句的右括号回到语句起始缩进：
+5. 需要换行时在参数边界断行，续行缩进 = 语句起始缩进 + 4；整条语句的右括号回到语句起始缩进：
 
    ```skill
        XFSKILL_Assert(
@@ -106,9 +109,9 @@
        )
    ```
 
-5. 优先保持单行（≤120 字符），只有超长才换行。
-6. 函数之间空一行；文件头与代码之间空一行。
-7. `let` 绑定的变量名在同一列声明，连续赋值语句的 `=` 对齐：
+6. 优先保持单行（≤120 字符），只有超长才换行。
+7. 函数之间空一行；文件头与代码之间空一行。
+8. `let` 绑定的变量名在同一列声明，连续赋值语句的 `=` 对齐：
 
    ```skill
    let((moduleDir ilFiles loaded)
@@ -118,7 +121,7 @@
    )
    ```
 
-8. 格式调整不得改变功能；格式化后必须重新执行三层闭环测试并全绿。
+9. 格式调整不得改变功能；格式化后必须重新执行三层闭环测试并全绿。
 
 ## 8. API 与命令规范
 
@@ -133,7 +136,7 @@
 任何修改 PCB 数据库的操作必须成对提交或回滚：
 
 ```skill
-defun(XFSKILL_DangerousEdit()
+defun(XFSKILL_DangerousEdit ()
   let((transactionMark changesOk)
     transactionMark = axlDBTransactionStart()
     changesOk       = nil
