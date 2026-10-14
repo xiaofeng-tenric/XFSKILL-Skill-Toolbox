@@ -1,7 +1,7 @@
 ; 文件名: main.il
 ; 作者: XFSKILL Dev Team
 ; 创建日期: 2026-10-10
-; 版本: 0.1.0
+; 版本: 0.3.0
 ; 功能描述: XFSKILL 总入口，负责核心层加载、状态初始化、命令注册与菜单构建
 ; 修改记录: 2026-10-10 创建最小可运行闭环框架；根目录支持从环境变量 XFSKILL 自取
 
@@ -17,7 +17,7 @@ when(XFSKILL_ROOT && isDir(strcat(XFSKILL_ROOT "/core"))
   load(strcat(XFSKILL_ROOT "/core/test_framework.il"))
 
   defun(XFSKILL_ShowVersion ()
-    XFSKILL_Log(strcat("version " XFSKILL_VERSION " root " XFSKILL_ROOT))
+    XFSKILL_Log(strcat("XFSKILL-Version  " XFSKILL_VERSION))
     XFSKILL_VERSION
   )
 

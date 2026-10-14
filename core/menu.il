@@ -1,7 +1,7 @@
 ; 文件名: menu.il
 ; 作者: XFSKILL Dev Team
 ; 创建日期: 2026-10-10
-; 版本: 0.1.0
+; 版本: 0.3.0
 ; 功能描述: XFSKILL 菜单层，先查后插，由 menu 触发器在 Allegro 装载菜单时把 XFSKILL 挂上菜单栏
 ; 修改记录: 2026-10-10 创建菜单层；菜单插入改由 menu 触发器执行；菜单树改为 XFSKILL-TEST1-TEST2 三级嵌套
 
@@ -16,20 +16,26 @@ unless(boundp('XFSKILL_MENU_TRIGGER_SET)
 defun(XFSKILL_MenuTree ()
   list(
     list('popup "XFSKILL")
-    list('popup "TEST1")
-    list("TEST2-1" "xfskill_hello")
-    list("TEST2-2" "xfskill_tests")
-    'end
-    list('separator)
+    list('popup "TEST")
     list("Run Smoke Test" "xfskill_smoke")
     list("Show Version" "xfskill_version")
+ 
+    'end
+    ;list('separator)
     list("Reload XFSKILL" "xfskill_reload")
+    list("Align Objects" "xfskill_align")
+    list("Set Grid" "xfskill_setgrid")
+    list("Set Grid by Pins" "xfskill_set_symbol_grid")
+    ;添加skill
+    ;list("我的功能" "xfskill_template")
+
+    
   )
 )
 
 defun(XFSKILL_FindExistingMenu ()
   let((probe)
-    probe = errset(axlUIMenuFind(nil "xfskill_hello"))
+    probe = errset(axlUIMenuFind(nil "xfskill_smoke"))
     if(probe
       then car(probe)
       else nil

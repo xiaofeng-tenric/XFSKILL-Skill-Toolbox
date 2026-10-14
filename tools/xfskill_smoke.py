@@ -55,6 +55,8 @@ def collect_files(root: Path):
         for path in root.glob(pattern):
             if "_backup" in path.parts:
                 continue
+            if "template" in path.parts:
+                continue
             found.append(path)
     return sorted(set(found))
 

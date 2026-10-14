@@ -1,0 +1,104 @@
+FILE_TYPE=FORM_DEFN VERSION=2
+
+FORM
+  FIXED
+  PORT 55 25
+  HEADER "XFSKILL - Set Grid"
+  TILE
+
+  GROUP "Unit"
+    GLOC 1 1
+    GSIZE 53 5
+  ENDGROUP
+
+  TEXT "Unit:"
+    TLOC 3 3
+  ENDTEXT
+
+  FIELD unit_mm
+    FLOC 10 3
+    CHECKLIST "mm"
+  ENDFIELD
+
+  FIELD unit_mil
+    FLOC 18 3
+    CHECKLIST "mil"
+  ENDFIELD
+
+
+  GROUP "Grid Size"
+    GLOC 1 7
+    GSIZE 53 12
+  ENDGROUP
+
+  TEXT "Select Grid Value:"
+    TLOC 3 9
+  ENDTEXT
+
+  FIELD grid_0_1
+    FLOC 3 11
+    CHECKLIST "0.1"
+  ENDFIELD
+
+  FIELD grid_0_5
+    FLOC 12 11
+    CHECKLIST "0.5"
+  ENDFIELD
+
+  FIELD grid_1
+    FLOC 21 11
+    CHECKLIST "1"
+  ENDFIELD
+
+  FIELD grid_3
+    FLOC 30 11
+    CHECKLIST "3"
+  ENDFIELD
+
+  FIELD grid_5
+    FLOC 39 11
+    CHECKLIST "5"
+  ENDFIELD
+
+  FIELD grid_10
+    FLOC 3 13
+    CHECKLIST "10"
+  ENDFIELD
+
+  FIELD grid_20
+    FLOC 12 13
+    CHECKLIST "20"
+  ENDFIELD
+
+  FIELD grid_50
+    FLOC 21 13
+    CHECKLIST "50"
+  ENDFIELD
+
+  FIELD grid_75
+    FLOC 30 13
+    CHECKLIST "75"
+  ENDFIELD
+
+  FIELD grid_100
+    FLOC 39 13
+    CHECKLIST "100"
+  ENDFIELD
+
+  FIELD ok_button
+    FLOC 5 20
+    MENUBUTTON "OK" 10 3
+  ENDFIELD
+
+  FIELD apply_button
+    FLOC 20 20
+    MENUBUTTON "Apply" 10 3
+  ENDFIELD
+
+  FIELD cancel_button
+    FLOC 35 20
+    MENUBUTTON "Cancel" 10 3
+  ENDFIELD
+
+ENDTILE
+ENDFORM

@@ -1,7 +1,7 @@
 ; 文件名: config.il
 ; 作者: XFSKILL Dev Team
 ; 创建日期: 2026-10-10
-; 版本: 0.1.0
+; 版本: 0.3.0
 ; 功能描述: XFSKILL 配置层，读取 VERSION 与 config/xfskill.cfg 并提供查询接口
 ; 修改记录: 2026-10-10 创建版本读取与 key=value 配置解析
 
